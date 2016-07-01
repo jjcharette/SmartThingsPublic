@@ -72,8 +72,13 @@ metadata {
 			)
 		}
 		tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
-			attributeState("level", label:'${currentValue}%')
+			attributeState("level", label:'32%')
+            //attributeState("level", label:'${currentValue}%')
 		}
+        tileAttribute("device.temperature", key: "VALUE_CONTROL") {
+        	attributeState("VALUE_UP", action: "coolingSetpointUp")
+        	attributeState("VALUE_DOWN", action: "coolingSetpointDown")
+    	}
 		tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
 			attributeState("idle", backgroundColor:"#44b621")
 			attributeState("heating", backgroundColor:"#ffa81e")
@@ -91,10 +96,12 @@ metadata {
 		//	attributeState("on", label:'${name}', backgroundColor:"#ffa81e")
 		//}
 		tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
-			attributeState("default", label:'${currentValue}')
+			attributeState("default", label:'19')
+            //attributeState("default", label:'${currentValue}')
 		}
 		tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
-			attributeState("default", label:'${currentValue}')
+			//attributeState("default", label:'${currentValue}')
+            attributeState("default", label:'25')
 		}
 	}
 
@@ -160,7 +167,8 @@ metadata {
 	}
 
 	valueTile("humidity", "device.humidity", width: 2, height: 2) {
-		state "default", label:'${currentValue}%', unit:"Humidity"
+		state "default", label:'30%', unit:"Humidity"
+        //state "default", label:'${currentValue}%', unit:"Humidity"
 	}
 
 	standardTile("temperatureUnit", "device.temperatureUnit", decoration: "flat", width: 1, height: 1) {
@@ -260,11 +268,13 @@ def away(){
 
 def fireplaceOff(){
 	log.debug("fireplace off")
+    sendHubCommand(get("fireplaceoff"))
 	sendEvent(name: "fireplace", value: "off")
 }
 
 def fireplaceOn(){
 	log.debug("fireplace on")
+    sendHubCommand(get("fireplaceon"))
 	sendEvent(name: "fireplace", value: "on")
 }
 
