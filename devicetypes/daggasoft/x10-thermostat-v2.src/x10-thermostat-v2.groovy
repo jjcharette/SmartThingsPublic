@@ -12,8 +12,7 @@ metadata {
 		capability "Sensor"
 		capability "Temperature Measurement"
 		capability "Thermostat"
-        
-        
+
 		command "away"
 		command "present"
 		command "setPresence"
@@ -23,44 +22,43 @@ metadata {
 		command "coolingSetpointDown"
 		command "setFahrenheit"
 		command "setCelsius"
+    command "setTemperature", ["number"]
+
+    //depricated
+    command "tempUp"
+    command "tempDown"
+
 		attribute "temperatureUnit", "string"
-        
-        //richard
-        command "setTemperature", ["number"]
-        //command "timer"
-        command "tempUp"
-		command "tempDown"
-		command "heatUp"
-		command "heatDown"
-		command "coolUp"
-		command "coolDown"
 	}
-    tiles(scale: 2) {
-    standardTile("tempreadout", "device.temperature", width: 6, height: 2, canChangeIcon: true) { //main things list test switch, set in main
-        //state "default", label:'${currentValue}°', unit:"dC"
-        state "default", label:'24°', unit:"dC",  action: "switch.off",
-                  icon: "st.Weather.weather2", backgroundColor: "#0099ff"
-    }
+  tiles(scale: 2) {
+  standardTile("tempreadout", "device.temperature", width: 6, height: 2, canChangeIcon: true) { //main things list test switch, set in main
+      //state "default", label:'${currentValue}°', unit:"dC"
+      state "default", label:'24°', unit:"dC",  action: "switch.off", icon: "st.Weather.weather2", backgroundColor: "#0099ff"
+      state "auto", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#79b821"
+      state "cool", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.cool", backgroundColor: "#0099ff"
+      state "heat", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.heat", backgroundColor: "#ffa81e"
+
+  }
 	multiAttributeTile(name:"temperature", type:"thermostat", width: 2, height: 4) {
 		tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
 			//attributeState("default", label:'${currentValue}°', /*icon:"st.Home.home1", */backgroundColors:[
-            attributeState("default", label:'24°', /*icon:"st.Home.home1", */backgroundColors:[
-                // Celsius Color Range
-                [value: 0, color: "#153591"],
-                [value: 7, color: "#1e9cbb"],
-                [value: 15, color: "#90d2a7"],
-                [value: 23, color: "#44b621"],
-                [value: 29, color: "#f1d801"],
-                [value: 33, color: "#d04e00"],
-                [value: 36, color: "#bc2323"],
-                // Fahrenheit Color Range
-                [value: 40, color: "#153591"],
-                [value: 44, color: "#1e9cbb"],
-                [value: 59, color: "#90d2a7"],
-                [value: 74, color: "#44b621"],
-                [value: 84, color: "#f1d801"],
-                [value: 92, color: "#d04e00"],
-                [value: 96, color: "#ff8426"]
+      attributeState("default", label:'24°', /*icon:"st.Home.home1", */backgroundColors:[
+          // Celsius Color Range
+          [value: 0, color: "#153591"],
+          [value: 7, color: "#1e9cbb"],
+          [value: 15, color: "#90d2a7"],
+          [value: 23, color: "#44b621"],
+          [value: 29, color: "#f1d801"],
+          [value: 33, color: "#d04e00"],
+          [value: 36, color: "#bc2323"],
+          // Fahrenheit Color Range
+          [value: 40, color: "#153591"],
+          [value: 44, color: "#1e9cbb"],
+          [value: 59, color: "#90d2a7"],
+          [value: 74, color: "#44b621"],
+          [value: 84, color: "#f1d801"],
+          [value: 92, color: "#d04e00"],
+          [value: 96, color: "#ff8426"]
 			]
 			)
 		}
@@ -77,7 +75,7 @@ metadata {
 			attributeState("heat", label:'${name}')
 			attributeState("cool", label:'${name}')
 			attributeState("auto", label:'${name}')
-            //attributeState("timer", label:'${name}')
+      //attributeState("timer", label:'${name}')
 		}
         tileAttribute("device.fireplaceState", key: "FIREPLACE_MODE") {
 			attributeState("off", label:'${name}')
@@ -120,9 +118,9 @@ metadata {
 		state("off", action:"thermostat.cool", icon: "st.thermostat.heating-cooling-off")
 		state("cool", action:"thermostat.heat", icon: "st.thermostat.cool")
 		state("heat", action:"thermostat.auto", icon: "st.thermostat.heat")
-        //state("heat", action:"thermostat.timer", icon: "st.thermostat.heat")
-        //state("timer", action:"thermostat.auto", icon: "st.Office.office6")
-        
+    //state("heat", action:"thermostat.timer", icon: "st.thermostat.heat")
+    //state("timer", action:"thermostat.auto", icon: "st.Office.office6")
+
 	}
 
 	standardTile("thermostatFanMode", "device.thermostatFanMode", inactiveLabel: true, decoration: "flat", width: 2, height: 2) {
@@ -160,37 +158,31 @@ metadata {
 		state("on", label: "On", action:"fireplaceOff", icon: "st.Home.home29")
         state("off", label: "Off", action:"fireplaceOn", icon: "st.Home.home29")
 	}
-    
+
 	main("tempreadout")
-    //main(["temperature", "thermostatOperatingState"])
-	details(["temperature", 
+  //main(["temperature", "thermostatOperatingState"])
+
+	details([
+            "temperature",
             "fireplace",
 
-			"thermostatOperatingState", 			 
-
+            "thermostatOperatingState",
             "coolingSetpoint",
-			"thermostatFanMode",             
+            "thermostatFanMode",
 
 
-            "thermostatMode",             
+            "thermostatMode",
 
-             
             "coolingSetpointDown",
-            "coolingSetpointUp", 
+            "coolingSetpointUp",
             "temperatureUnit",
-            "refresh", 
+            "refresh",
 
-			"presence",
-             
-            ])
+            "presence",
+          ])
     }
- }
- 
- 
- 
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
+}
+
 def installed() {
 	sendEvent(name: "temperature", value: 21, unit: "C")
 	sendEvent(name: "heatingSetpoint", value: 21, unit: "C")
@@ -207,7 +199,7 @@ def evaluate(temp, heatingSetpoint, coolingSetpoint) {
 	log.debug "evaluate($temp, $heatingSetpoint, $coolingSetpoint"
 	log.debug mode
 	//everything below here is fucked but this should update the idle icon when you change the set point and mode
-    
+
 	def threshold = 1.0
 	def current = device.currentValue("thermostatOperatingState")
 	def mode = device.currentValue("thermostatMode")
@@ -237,9 +229,6 @@ def evaluate(temp, heatingSetpoint, coolingSetpoint) {
 			idle = true
 		}
         log.debug "setting temp"
-       
-		
-        
 	}
 	else {
 		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
@@ -284,6 +273,8 @@ def setCoolingSetpoint(Double degreesF) {
 }
 
 def setThermostatMode(String value) {
+
+  sendEvent(name: "tempreadout", value: value)
 	sendEvent(name: "thermostatMode", value: value)
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
 }
@@ -291,7 +282,7 @@ def setThermostatMode(String value) {
 def setThermostatFanMode(String value) {
 	sendEvent(name: "thermostatFanMode", value: value)
 }
- 
+
 def setCelsius() {
 	log.debug "celsius"
 	sendEvent(name: "temperatureUnit", value: "celsius")
@@ -375,14 +366,14 @@ def setTemperature(value) {
 	evaluate(value, device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
 }
 
-def heatUp() {
+def heatingSetpointUp() {
 	def ts = device.currentState("heatingSetpoint")
 	def value = ts ? ts.integerValue + 1 : 68
 	sendEvent(name:"heatingSetpoint", value: value)
 	evaluate(device.currentValue("temperature"), value, device.currentValue("coolingSetpoint"))
 }
 
-def heatDown() {
+def heatingSetpointDown() {
 	def ts = device.currentState("heatingSetpoint")
 	def value = ts ? ts.integerValue - 1 : 68
 	sendEvent(name:"heatingSetpoint", value: value)
@@ -404,12 +395,6 @@ def coolingSetpointDown() {
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), value)
 }
 
-
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
- 
-//HELPER FUNCTIONS
 
 private Integer convertHexToInt(hex) {
 
@@ -524,5 +509,3 @@ def locationHandler(evt) {
 //        log.trace "evt"+evt
     log.trace parsedEvent
 }
-
-//////

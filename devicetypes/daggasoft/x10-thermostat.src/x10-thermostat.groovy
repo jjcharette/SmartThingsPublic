@@ -11,12 +11,12 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
- 
+
 preferences {
         input("ip", "string", title:"IP Address", description: "10.0.0.10", required: true, displayDuringSetup: false)
         input("port", "string", title:"Port", description: "80", defaultValue: 8000 , required: true, displayDuringSetup: false)
 }
- 
+
 metadata {
 	// Automatically generated. Make future change here.
 	definition (name: "x10 Thermostat", namespace: "daggasoft", author: "daggasoft") {
@@ -34,11 +34,11 @@ metadata {
 	}
 
 	tiles(scale: 2) {
-    
+
         standardTile("switchTile", "device.temperature", width: 2, height: 2, canChangeIcon: true) { //main things list test switch, set in main
             state "default", label:'${currentValue}°', unit:"dC"
         }
-		multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4) {  
+		multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4) {
 			tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
 				attributeState("default", label:'${currentValue}°', unit:"dC") // the label in the list of things
 			}
@@ -55,7 +55,7 @@ metadata {
 				attributeState("cooling", backgroundColor:"#ff99cc")
 			}
 			tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
-                attributeState("timer", label:'${name}')
+        attributeState("timer", label:'${name}')
 				attributeState("off", label:'${name}')
 				attributeState("heat", label:'${name}')
 				attributeState("cool", label:'${name}')
@@ -114,7 +114,7 @@ metadata {
 			state "heat", label:'${name}', action:"thermostat.cool", backgroundColor:"#ffa81e"
 			state "cool", label:'${name}', action:"thermostat.auto", backgroundColor:"#269bd2"
 			state "auto", label:'${name}', action:"thermostat.timer", backgroundColor:"#79b821"
-            state "timer", label:'${name}', action:"thermostat.off", backgroundColor:"#ff99cc"
+      state "timer", label:'${name}', action:"thermostat.off", backgroundColor:"#ff99cc"
 		}
 		standardTile("fanMode", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "fanAuto", label:'${name}', action:"thermostat.fanOn", backgroundColor:"#ffffff"
@@ -127,7 +127,7 @@ metadata {
 			state "cooling", label:'${name}', backgroundColor:"#269bd2"
 		}
 
-		//main "button"		
+		//main "button"
         main("switchTile")
 		//main("thermostatMulti")		//this controls the whats shown on the things list
 		details([					//I think this is the actual layout in the app
