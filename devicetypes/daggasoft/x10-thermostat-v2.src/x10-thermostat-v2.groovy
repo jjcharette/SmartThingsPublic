@@ -2,6 +2,10 @@ preferences {
         input("ip", "string", title:"IP Address", description: "10.0.0.10", required: true, displayDuringSetup: false)
         input("port", "string", title:"Port", description: "80", defaultValue: 80 , required: true, displayDuringSetup: false)
         input("unit", "string", title:"Unit", description: "C", defaultValue: "C" , displayDuringSetup: false)
+        //new
+        input "outlets", "capability.switch", title: "Outlets", multiple: true, required: false
+        input "sensor", "capability.temperatureMeasurement", title: "Sensor", multiple: true, required: false
+        input "motion", "capability.motionSensor", title: "Motion", required: false, multiple: true
 }
 metadata {
 	definition (name: "x10 Thermostat v2", namespace: "daggasoft", author: "daggasoft") {
@@ -20,22 +24,27 @@ metadata {
 		command "heatingSetpointDown"
 		command "coolingSetpointUp"
 		command "coolingSetpointDown"
+        command "fireplaceOff"
+        command "fireplaceOn"
 		command "setFahrenheit"
 		command "setCelsius"
-    command "setTemperature", ["number"]
+        command "setTemperature", ["number"]
 
-    //depricated
-    command "tempUp"
-    command "tempDown"
+        //depricated
+        command "tempUp"
+        command "tempDown"
 
-		attribute "temperatureUnit", "string"
+        attribute "temperatureUnit", "string"
 	}
   tiles(scale: 2) {
-  standardTile("tempreadout", "device.temperature", width: 6, height: 2, canChangeIcon: true) { //main things list test switch, set in main
+  standardTile("tempreadout", "device.temperature", width: 6, height: 2, canChangeIcon: false) { //main things list test switch, set in main
       //state "default", label:'${currentValue}°', unit:"dC"
       state "default", label:'24°', unit:"dC",  action: "switch.off", icon: "st.Weather.weather2", backgroundColor: "#0099ff"
-      state "auto", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#79b821"
-      state "cool", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.cool", backgroundColor: "#0099ff"
+      
+      //doesnt work
+      state "off", label:'24°', unit:"dC",  action: "switch.auto", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#ffffff"
+      state "auto", label:'24°', unit:"dC",  action: "switch.cool", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#79b821"
+      state "cool", label:'24°', unit:"dC",  action: "switch.heat", icon: "st.thermostat.cool", backgroundColor: "#0099ff"
       state "heat", label:'24°', unit:"dC",  action: "switch.off", icon: "st.thermostat.heat", backgroundColor: "#ffa81e"
 
   }
@@ -77,10 +86,10 @@ metadata {
 			attributeState("auto", label:'${name}')
       //attributeState("timer", label:'${name}')
 		}
-        tileAttribute("device.fireplaceState", key: "FIREPLACE_MODE") {
-			attributeState("off", label:'${name}')
-			attributeState("on", label:'${name}')
-		}
+       // tileAttribute("device.fireplaceState", key: "FIREPLACE_MODE") {
+		//	attributeState("off", label:'${name}')
+		//	attributeState("on", label:'${name}', backgroundColor:"#ffa81e")
+		//}
 		tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
 			attributeState("default", label:'${currentValue}')
 		}
@@ -129,6 +138,11 @@ metadata {
 		state "circulate", action:"thermostat.fanAuto", icon: "st.thermostat.fan-circulate"
 	}
 
+	standardTile("fireplace", "device.fireplace", decoration: "flat", width: 2, height: 2) {
+		state "on", label: "On", action:"fireplaceOff", icon: "st.Home.home29", backgroundColor:"#ff8426"
+        state "off", label: "Off", action:"fireplaceOn", icon: "st.Home.home29"
+	}
+
 	standardTile("presence", "device.presence", decoration: "flat", width: 6, height: 2) {
 		state "present", label:'${name}', action:"away", icon: "st.Home.home2"
 		state "not present", label:'away', action:"present", icon: "st.Transportation.transportation5"
@@ -154,10 +168,7 @@ metadata {
 		state "celsius", label: "°C", icon: "st.Weather.weather2", action:"setFahrenheit"
 	}
 
-	standardTile("fireplace", "device.fireplaceState", decoration: "flat", width: 2, height: 2) {
-		state("on", label: "On", action:"fireplaceOff", icon: "st.Home.home29")
-        state("off", label: "Off", action:"fireplaceOn", icon: "st.Home.home29")
-	}
+
 
 	main("tempreadout")
   //main(["temperature", "thermostatOperatingState"])
@@ -274,7 +285,7 @@ def setCoolingSetpoint(Double degreesF) {
 
 def setThermostatMode(String value) {
 
-  sendEvent(name: "tempreadout", value: value)
+  	sendEvent(name: "tempreadout", value: value)
 	sendEvent(name: "thermostatMode", value: value)
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
 }
