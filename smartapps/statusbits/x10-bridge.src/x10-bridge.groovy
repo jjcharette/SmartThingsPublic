@@ -303,7 +303,7 @@ private def setupAddSwitch() {
         required    : true,
         defaultValue:"X10 Switch"
     ]
-    
+
     def inputDeviceType = [
         name        : "deviceType",
         type        : "enum",
@@ -338,7 +338,7 @@ private def setupAddSwitch() {
     ]
 
     // Set new device type
-    //state.setup.deviceType = "switch"
+    state.setup.deviceType = "switch"
 
     return dynamicPage(pageProperties) {
         section {
@@ -510,7 +510,7 @@ def x10_bright(nid, xdim) {
     }
     socketSend("${settings.mochadProtocol} ${s[1]} bright\r\n", state.networkId)
    // socketSend("${settings.mochadProtocol} ${s[1]} xdim ${xdim}\r\n", state.networkId)
-    
+
 }
 
 private def initialize() {
@@ -537,7 +537,8 @@ private def addSwitch(addr, type) {
         return false
     }
 
-    def devFile = type
+    def devFile = "X10 Switch"
+    //def devFile = type
     def devParams = [
         name            : settings.setupDevName,
         label           : settings.setupDevName,
