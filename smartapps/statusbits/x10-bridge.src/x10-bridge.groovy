@@ -146,7 +146,7 @@ private def setupMenu() {
     return dynamicPage(pageProperties) {
         section {
             href "setupMochad", title:"Configure Mochad Gateway", description:"Tap to open"
-            href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
+            href "setupAddSwitch", title:"Add Switch", description:"Tap to open"
             if (state.devices.size() > 0) {
                 href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
@@ -303,6 +303,15 @@ private def setupAddSwitch() {
         required    : true,
         defaultValue:"X10 Switch"
     ]
+    
+    def inputDeviceType = [
+        name        : "deviceType",
+        type        : "enum",
+        title       : "What type of switch is it?",
+        required    : true,
+        metadata    : [values:["switch", "dim switch", "appliance"]],
+        defaultValue:"switch"
+    ]
 
     def inputHouseCode = [
         name        : "setupHouseCode",
@@ -329,12 +338,13 @@ private def setupAddSwitch() {
     ]
 
     // Set new device type
-    state.setup.deviceType = "switch"
+    //state.setup.deviceType = "switch"
 
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelpName
             input inputDeviceName
+            input inputDeviceType
         }
         section("X10 Address") {
             paragraph textHelpAddr
@@ -347,16 +357,23 @@ private def setupAddSwitch() {
 private def setupActionAdd() {
     TRACE("setupActionAdd()")
 
+
     String devAddr = settings.setupHouseCode + settings.setupUnitCode
-    if (state.devices.containsKey(devAddr)) {
-        log.error "X10 address ${devAddr} is in use"
-    } else {
+  //  if (state.devices.containsKey(devAddr)) {
+   //     log.error "X10 address ${devAddr} is in use"
+  //  } else {
         switch (state.setup.deviceType) {
         case "switch":
-            addSwitch(devAddr)
+            addSwitch(devAddr, "X10 Switch")
+            break;
+        case "dimswitch":
+            addSwitch(devAddr, "X10 Dim Switch")
+            break;
+        case "appliance":
+            addSwitch(devAddr, "X10 Appliance")
             break;
         }
-    }
+   // }
 
     return setupMenu()
 }
@@ -470,7 +487,7 @@ def x10_off(nid) {
 }
 
 // Excecute X10 'dim' command on behalf of child device
-def x10_dim(nid) {
+def x10_dim(nid, xdim) {
 	TRACE("x10_dim(${nid})")
 
     def s = nid?.tokenize(':')
@@ -478,12 +495,12 @@ def x10_dim(nid) {
         log.debug "Invalid device network ID ${nid}"
         return
     }
-
     socketSend("${settings.mochadProtocol} ${s[1]} dim\r\n", state.networkId)
+   // socketSend("${settings.mochadProtocol} ${s[1]} xdim ${xdim}\r\n", state.networkId)
 }
 
 // Excecute X10 'bright' command on behalf of child device
-def x10_bright(nid) {
+def x10_bright(nid, xdim) {
 	TRACE("x10_bright(${nid})")
 
     def s = nid?.tokenize(':')
@@ -491,8 +508,9 @@ def x10_bright(nid) {
         log.debug "Invalid device network ID ${nid}"
         return
     }
-
     socketSend("${settings.mochadProtocol} ${s[1]} bright\r\n", state.networkId)
+   // socketSend("${settings.mochadProtocol} ${s[1]} xdim ${xdim}\r\n", state.networkId)
+    
 }
 
 private def initialize() {
@@ -510,7 +528,7 @@ private def initialize() {
     //subscribe(app, onAppTouch)
 }
 
-private def addSwitch(addr) {
+private def addSwitch(addr, type) {
     TRACE("addSwitch(${addr})")
 
     def dni = "X10:${addr}".toUpperCase()
@@ -519,7 +537,7 @@ private def addSwitch(addr) {
         return false
     }
 
-    def devFile = "X10 Switch"
+    def devFile = type
     def devParams = [
         name            : settings.setupDevName,
         label           : settings.setupDevName,
@@ -549,15 +567,19 @@ private def addSwitch(addr) {
 private def updateDeviceList() {
     TRACE("updateDeviceList()")
 
-    state.devices.each { k,v ->
+//why is this breaking things on new device creation?
+/*    state.devices.each { k,v ->
         if (!getChildDevice(v.dni)) {
             log.trace "Removing deleted device ${v.dni}"
             state.devices.remove(k)
         }
     }
-
+    */
+//why^^
     // refresh all devices
     def devices = getChildDevices()
+    log.debug "DEVICES:"
+    log.debug devices
     devices?.each {
         it.refresh()
     }
