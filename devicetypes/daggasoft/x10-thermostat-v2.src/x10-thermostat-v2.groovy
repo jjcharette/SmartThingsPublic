@@ -4,7 +4,7 @@ preferences {
         input("unit", "string", title:"Unit", description: "C", defaultValue: "C" , displayDuringSetup: false)
         //new
         input "outlets", "capability.switch", title: "Outlets", multiple: true, required: false
-        input "sensor", "capability.temperatureMeasurement", title: "Sensor", multiple: true, required: false
+        input "sensor", "capability.temperatureMeasurement", title: "Sensor", multiple: false, required: false
         input "motion", "capability.motionSensor", title: "Motion", required: false, multiple: true
 }
 metadata {
@@ -38,8 +38,8 @@ metadata {
 	}
   tiles(scale: 2) {
   standardTile("tempreadout", "device.temperature", width: 6, height: 2, canChangeIcon: false) { //main things list test switch, set in main
-      //state "default", label:'${currentValue}°', unit:"dC"
-      state "default", label:'24°', unit:"dC",  action: "switch.off", icon: "st.Weather.weather2", backgroundColor: "#0099ff"
+      state "default", label:'${currentValue}°', unit:"C",  action: "switch.off", icon: "st.Weather.weather2", backgroundColor: "#80dfff"
+      //state "default", label:'24°', unit:"dC",  action: "switch.off", icon: "st.Weather.weather2", backgroundColor: "#80dfff"
       
       //doesnt work
       state "off", label:'24°', unit:"dC",  action: "switch.auto", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#ffffff"
@@ -50,8 +50,8 @@ metadata {
   }
 	multiAttributeTile(name:"temperature", type:"thermostat", width: 2, height: 4) {
 		tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-			//attributeState("default", label:'${currentValue}°', /*icon:"st.Home.home1", */backgroundColors:[
-      attributeState("default", label:'24°', /*icon:"st.Home.home1", */backgroundColors:[
+	  attributeState("default", label:'${currentValue}°', /*icon:"st.Home.home1", */backgroundColors:[
+      //attributeState("default", label:'24°', /*icon:"st.Home.home1", */backgroundColors:[
           // Celsius Color Range
           [value: 0, color: "#153591"],
           [value: 7, color: "#1e9cbb"],
@@ -214,6 +214,12 @@ def installed() {
 }
 
 def evaluate(temp, heatingSetpoint, coolingSetpoint) {
+	//sendEvent(name: "temperature", value: 21, unit: "C")
+    def currentState = sensor.currentState("temperature")
+    sendEvent(name: "temperature", value: currentState.value, unit: "C")
+    log.debug "temperature value as a string: ${currentState.value}"
+    log.debug "time this temperature record was created: ${currentState.date}"
+    
 	sendHubCommand(get(coolingSetpoint))
 	log.debug "evaluate($temp, $heatingSetpoint, $coolingSetpoint"
 	log.debug mode

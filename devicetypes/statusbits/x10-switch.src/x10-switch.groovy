@@ -105,7 +105,7 @@ def parse(String message) {
 // switch.on() command handler
 def on() {
     TRACE("on()")
-
+	sendEvent(name: "xdim", value: 254) //rich; keep track of dim state
     if (parent) {
         parent.x10_on(device.deviceNetworkId)
     	sendEvent(name:"switch", value:"on")
@@ -125,18 +125,24 @@ def off() {
 // Custom dim() command handler
 def dim() {
     TRACE("dim()")
-
+	def xdim = device.currentValue("xdim")
+    xdim = xdim.toInteger() - 10
+    sendEvent(name: "xdim", value: xdim)
+    log.debug xdim
     if (parent) {
-        parent.x10_dim(device.deviceNetworkId)
+        parent.x10_dim(device.deviceNetworkId, xdim)
     }
 }
 
 // Custom bright() command handler
 def bright() {
     TRACE("bright()")
-
+	def xdim = device.currentValue("xdim")
+    xdim = xdim.toInteger() + 10
+    sendEvent(name: "xdim", value: xdim)
+    log.debug xdim
     if (parent) {
-        parent.x10_bright(device.deviceNetworkId)
+        parent.x10_bright(device.deviceNetworkId, xdim)
     }
 }
 
