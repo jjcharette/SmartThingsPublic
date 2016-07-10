@@ -268,22 +268,21 @@ def fireplaceOn(){
 }
 
 
-def setHeatingSetpoint(Double degreesF) {
-	log.debug "setHeatingSetpoint($degreesF)"
-    sendHubCommand(get(degreesF))
-	sendEvent(name: "heatingSetpoint", value: degreesF)
-	evaluate(device.currentValue("temperature"), degreesF, device.currentValue("coolingSetpoint"))
+def setHeatingSetpoint(Double temp) {
+	log.debug "setHeatingSetpoint($temp)"
+    sendHubCommand(get(temp))
+	sendEvent(name: "heatingSetpoint", value: temp)
+	evaluate(device.currentValue("temperature"), temp, device.currentValue("coolingSetpoint"))
 }
 
-def setCoolingSetpoint(Double degreesF) {
-	log.debug "setCoolingSetpoint($degreesF)"
-    sendHubCommand(get(degreesF))
-	sendEvent(name: "coolingSetpoint", value: degreesF)
-	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), degreesF)
+def setCoolingSetpoint(Double temp) {
+	log.debug "setCoolingSetpoint($temp)"
+    sendHubCommand(get(temp))
+	sendEvent(name: "coolingSetpoint", value: temp)
+	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), temp)
 }
 
 def setThermostatMode(String value) {
-
   	sendEvent(name: "tempreadout", value: value)
 	sendEvent(name: "thermostatMode", value: value)
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
@@ -407,7 +406,7 @@ def coolingSetpointDown() {
 }
 
 
-def getTemp(){
+def getSensorTemps(){
 
 	def currentState = sensor.currentState("temperature")
     def currentState2 = sensor2.currentState("temperature")
@@ -444,20 +443,19 @@ def getTemp(){
 }
 
 def evaluate(temp, heatingSetpoint, coolingSetpoint) {
-    getTemp()
-	sendHubCommand(get(coolingSetpoint))
-    
 	def threshold = 1.0
 	def current = device.currentValue("thermostatOperatingState")
 	def mode = device.currentValue("thermostatMode")
 
-	log.debug "-- evaluate($temp, $heatingSetpoint, $coolingSetpoint) at mode $mode"
-
 	def heating = false
 	def cooling = false
 	def idle = false
+	
+    log.debug "-- evaluate($temp, $heatingSetpoint, $coolingSetpoint) at mode $mode"
     
-	//everything below here is fucked but this should update the idle icon when you change the set point and mode    
+    getSensorTemps()
+	sendHubCommand(get(coolingSetpoint)) //this doesnt need to happen since we are replacing the temp sensor in the AC unit itself
+        
 //If Heat or Auto
 	if (mode in ["heat","emergency heat","auto"]) {
 log.debug "-- Heat or Auto  mode"
