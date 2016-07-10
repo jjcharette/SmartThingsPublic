@@ -247,96 +247,6 @@ def installed() {
 	sendEvent(name: "humidity", value: 53, unit: "%")
 }
 
-def getTemp(){
-
-	def currentState = sensor.currentState("temperature")
-    def currentState2 = sensor2.currentState("temperature")
-    def currentState3 = sensor3.currentState("temperature")
-    def currentState4 = sensor4.currentState("temperature")
-    def currentStateArray = sensorArr.currentState("temperature")
-    
-    def temps = [currentState.integerValue, currentState2.integerValue, currentState3.integerValue, currentState4.integerValue]
-    def average = temps.sum() / temps.size()
-    def min = temps.min()
-    def max = temps.max()
-    
-    log.debug "Average temp ${average}"
-    log.debug "Min temp ${min}"
-    log.debug "Max temp ${max}"
-
-    log.debug "temperature value as a string: ${currentState.value}"
-    log.debug "temperature value for all: ${currentState.value} ${currentState2.value} ${currentState3.value} ${currentState4.value} "
-    log.debug "time this temperature record was created: ${currentState.date}"
-    
-    log.debug "temperature value as a string: ${currentStateArray.value}"
-    log.debug "time this temperature record was created: ${currentStateArray.date}"
-    
-    //sendEvent(name: "temperature", value: currentState.value, unit: "C")
-    sendEvent(name: "temperature", value: max, unit: "C")
-    
-    sendEvent(name: "temperature1", value: currentState.value, unit: "C")
-    sendEvent(name: "temperature2", value: currentState2.value, unit: "C")
-    sendEvent(name: "temperature3", value: currentState3.value, unit: "C")
-    sendEvent(name: "temperature4", value: currentState4.value, unit: "C")
-    sendEvent(name: "tempmin", value: min, unit: "C")
-    sendEvent(name: "tempmax", value: max, unit: "C")
-    sendEvent(name: "tempavg", value: average, unit: "C")
-}
-
-def evaluate(temp, heatingSetpoint, coolingSetpoint) {
-    getTemp()
-	sendHubCommand(get(coolingSetpoint))
-    
-	def threshold = 1.0
-	def current = device.currentValue("thermostatOperatingState")
-	def mode = device.currentValue("thermostatMode")
-
-	log.debug "-- evaluate($temp, $heatingSetpoint, $coolingSetpoint) at mode $mode"
-
-	def heating = false
-	def cooling = false
-	def idle = false
-    
-	//everything below here is fucked but this should update the idle icon when you change the set point and mode    
-//If Heat or Auto
-	if (mode in ["heat","emergency heat","auto"]) {
-log.debug "-- Heat or Auto  mode"
-		if (heatingSetpoint - temp >= threshold) {
-			heating = true
-			sendEvent(name: "thermostatOperatingState", value: "heating")
-		}
-		else if (temp - heatingSetpoint >= threshold) {
-			idle = true
-		}
-		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
-        sendHubCommand(get(heatingSetpoint))
-	}
-//If Cool or Auto
-	if (mode in ["cool","auto"]) {
-log.debug "-- Cool or Auto mode"
-    	sendEvent(name: "thermostatSetpoint", value: coolingSetpoint)
-		if (temp - coolingSetpoint >= threshold) {
-			cooling = true
-			sendEvent(name: "thermostatOperatingState", value: "cooling")
-		}
-		else if (coolingSetpoint - temp >= threshold && !heating) {
-			idle = true
-		}
-log.debug "setting temp"
-	}
-//If Off
-	else { 
-log.debug "-- Not Heat or Auto and note Cool or Auto"
-		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
-        sendHubCommand(get(heatingSetpoint))
-	}
-//If Idle
-	if (idle && !heating && !cooling) {
-log.debug "-- Idle and not heating or cooling"
-		sendEvent(name: "thermostatOperatingState", value: "idle")
-	}
-}
-
 def present(){
 	sendEvent(name: "presence", value: "present")
 }
@@ -440,10 +350,9 @@ def fanCirculate() {
 	sendEvent(name: "thermostatFanMode", value: "circulate")
 }
 def poll() {
-	log.debug "*************Executing 'poll'"
-    //sendEvent(name: "switch", value: "off")
-    
-    evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetPoint"))
+	log.debug "*************Executing poll *************"
+    evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
+    log.debug "*****************************************"
 	//null
 }
 
@@ -497,6 +406,96 @@ def coolingSetpointDown() {
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), value)
 }
 
+
+def getTemp(){
+
+	def currentState = sensor.currentState("temperature")
+    def currentState2 = sensor2.currentState("temperature")
+    def currentState3 = sensor3.currentState("temperature")
+    def currentState4 = sensor4.currentState("temperature")
+    def currentStateArray = sensorArr.currentState("temperature")
+    
+    def temps = [currentState.integerValue, currentState2.integerValue, currentState3.integerValue, currentState4.integerValue]
+    def average = temps.sum() / temps.size()
+    def min = temps.min()
+    def max = temps.max()
+    
+    log.debug "Average temp ${average}"
+    log.debug "Min temp ${min}"
+    log.debug "Max temp ${max}"
+
+    log.debug "temperature value as a string: ${currentState.value}"
+    log.debug "temperature value for all: ${currentState.value} ${currentState2.value} ${currentState3.value} ${currentState4.value} "
+    log.debug "time this temperature record was created: ${currentState.date}"
+    
+    log.debug "temperature value as a string: ${currentStateArray.value}"
+    log.debug "time this temperature record was created: ${currentStateArray.date}"
+    
+    //sendEvent(name: "temperature", value: currentState.value, unit: "C")
+    sendEvent(name: "temperature", value: max, unit: "C")
+    
+    sendEvent(name: "temperature1", value: currentState.value, unit: "C")
+    sendEvent(name: "temperature2", value: currentState2.value, unit: "C")
+    sendEvent(name: "temperature3", value: currentState3.value, unit: "C")
+    sendEvent(name: "temperature4", value: currentState4.value, unit: "C")
+    sendEvent(name: "tempmin", value: min, unit: "C")
+    sendEvent(name: "tempmax", value: max, unit: "C")
+    sendEvent(name: "tempavg", value: average, unit: "C")
+}
+
+def evaluate(temp, heatingSetpoint, coolingSetpoint) {
+    getTemp()
+	sendHubCommand(get(coolingSetpoint))
+    
+	def threshold = 1.0
+	def current = device.currentValue("thermostatOperatingState")
+	def mode = device.currentValue("thermostatMode")
+
+	log.debug "-- evaluate($temp, $heatingSetpoint, $coolingSetpoint) at mode $mode"
+
+	def heating = false
+	def cooling = false
+	def idle = false
+    
+	//everything below here is fucked but this should update the idle icon when you change the set point and mode    
+//If Heat or Auto
+	if (mode in ["heat","emergency heat","auto"]) {
+log.debug "-- Heat or Auto  mode"
+		if (heatingSetpoint - temp >= threshold) {
+			heating = true
+			sendEvent(name: "thermostatOperatingState", value: "heating")
+		}
+		else if (temp - heatingSetpoint >= threshold) {
+			idle = true
+		}
+		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
+        sendHubCommand(get(heatingSetpoint))
+	}
+//If Cool or Auto
+	if (mode in ["cool","auto"]) {
+log.debug "-- Cool or Auto mode"
+    	sendEvent(name: "thermostatSetpoint", value: coolingSetpoint)
+		if (temp - coolingSetpoint >= threshold) {
+			cooling = true
+			sendEvent(name: "thermostatOperatingState", value: "cooling")
+		}
+		else if (coolingSetpoint - temp >= threshold && !heating) {
+			idle = true
+		}
+log.debug "setting temp"
+	}
+//If Off
+	else { 
+log.debug "-- Not Heat or Auto and note Cool or Auto"
+		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
+        sendHubCommand(get(heatingSetpoint))
+	}
+//If Idle
+	if (idle && !heating && !cooling) {
+log.debug "-- Idle and not heating or cooling"
+		sendEvent(name: "thermostatOperatingState", value: "idle")
+	}
+}
 
 private Integer convertHexToInt(hex) {
 
