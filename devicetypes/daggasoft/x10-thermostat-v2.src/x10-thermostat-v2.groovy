@@ -5,6 +5,10 @@ preferences {
         //new
         input "outlets", "capability.switch", title: "Outlets", multiple: true, required: false
         input "sensor", "capability.temperatureMeasurement", title: "Sensor", multiple: false, required: false
+        input "sensor2", "capability.temperatureMeasurement", title: "Sensor 2", multiple: false, required: false
+        input "sensor3", "capability.temperatureMeasurement", title: "Sensor 3 ", multiple: false, required: false
+        input "sensor4", "capability.temperatureMeasurement", title: "Sensor 4", multiple: false, required: false
+        input "sensorArr", "capability.temperatureMeasurement", title: "SensorArray", multiple: true, required: false
         input "motion", "capability.motionSensor", title: "Motion", required: false, multiple: true
 }
 metadata {
@@ -120,7 +124,29 @@ metadata {
 	valueTile("coolingSetpoint", "device.coolingSetpoint", width: 2, height: 2) {
 		state "default", label:'${currentValue}°', unit:"Cool", backgroundColor:"#1e9cbb"
 	}
-
+    
+    valueTile("temperature1", "device.temperature1", width: 3, height: 1) {
+		state "default", label:'Hallway (${currentValue}°)', unit:"C"
+	}
+	valueTile("temperature2", "device.temperature2", width: 3, height: 1) {
+		state "default", label:'Kitchen (${currentValue}°)', unit:"C"
+	}
+	valueTile("temperature3", "device.temperature3", width: 3, height: 1) {
+		state "default", label:'Living Room (${currentValue}°)', unit:"C"
+	}
+	valueTile("temperature4", "device.temperature4", width: 3, height: 1) {
+		state "default", label:'Upstairs (${currentValue}°)', unit:"C"
+	}
+    valueTile("tempmin", "device.tempmin", width: 2, height: 1) {
+		state "default", label:'MIN ${currentValue}°', unit:"C"
+	}
+	valueTile("tempmax", "device.tempmax", width: 2, height: 1) {
+		state "default", label:'MAX ${currentValue}°', unit:"C"
+	}
+	valueTile("tempavg", "device.tempavg", width: 2, height: 1) {
+		state "default", label:'AVG ${currentValue}°', unit:"C"
+	}
+    
 	standardTile("heatingSetpointDown", "device.heatingSetpoint", decoration: "flat", width: 1, height: 1) {
 		state "heatingSetpointDown", label:' Heat ', action:"heatingSetpointDown", icon:"st.thermostat.thermostat-down"
 	}
@@ -183,21 +209,29 @@ metadata {
 
 	details([
             "temperature",
+            
             "fireplace",
-
             "thermostatOperatingState",
             "coolingSetpoint",
-            "thermostatFanMode",
 
-
+			"thermostatFanMode",
             "thermostatMode",
 
             "coolingSetpointDown",
             "coolingSetpointUp",
             "temperatureUnit",
             "refresh",
-
-            "presence",
+           
+            "tempmin",
+            "tempmax",
+            "tempavg",
+            
+        	"temperature1",
+        	"temperature2",
+        	"temperature3",
+        	"temperature4",
+            
+        	"presence",
           ])
     }
 }
@@ -213,27 +247,60 @@ def installed() {
 	sendEvent(name: "humidity", value: 53, unit: "%")
 }
 
-def evaluate(temp, heatingSetpoint, coolingSetpoint) {
-	//sendEvent(name: "temperature", value: 21, unit: "C")
-    def currentState = sensor.currentState("temperature")
-    sendEvent(name: "temperature", value: currentState.value, unit: "C")
+def getTemp(){
+
+	def currentState = sensor.currentState("temperature")
+    def currentState2 = sensor2.currentState("temperature")
+    def currentState3 = sensor3.currentState("temperature")
+    def currentState4 = sensor4.currentState("temperature")
+    def currentStateArray = sensorArr.currentState("temperature")
+    
+    def temps = [currentState.integerValue, currentState2.integerValue, currentState3.integerValue, currentState4.integerValue]
+    def average = temps.sum() / temps.size()
+    def min = temps.min()
+    def max = temps.max()
+    
+    log.debug "Average temp ${average}"
+    log.debug "Min temp ${min}"
+    log.debug "Max temp ${max}"
+
     log.debug "temperature value as a string: ${currentState.value}"
+    log.debug "temperature value for all: ${currentState.value} ${currentState2.value} ${currentState3.value} ${currentState4.value} "
     log.debug "time this temperature record was created: ${currentState.date}"
     
-	sendHubCommand(get(coolingSetpoint))
-	log.debug "evaluate($temp, $heatingSetpoint, $coolingSetpoint"
-	log.debug mode
-	//everything below here is fucked but this should update the idle icon when you change the set point and mode
+    log.debug "temperature value as a string: ${currentStateArray.value}"
+    log.debug "time this temperature record was created: ${currentStateArray.date}"
+    
+    //sendEvent(name: "temperature", value: currentState.value, unit: "C")
+    sendEvent(name: "temperature", value: max, unit: "C")
+    
+    sendEvent(name: "temperature1", value: currentState.value, unit: "C")
+    sendEvent(name: "temperature2", value: currentState2.value, unit: "C")
+    sendEvent(name: "temperature3", value: currentState3.value, unit: "C")
+    sendEvent(name: "temperature4", value: currentState4.value, unit: "C")
+    sendEvent(name: "tempmin", value: min, unit: "C")
+    sendEvent(name: "tempmax", value: max, unit: "C")
+    sendEvent(name: "tempavg", value: average, unit: "C")
+}
 
+def evaluate(temp, heatingSetpoint, coolingSetpoint) {
+    getTemp()
+	sendHubCommand(get(coolingSetpoint))
+    
 	def threshold = 1.0
 	def current = device.currentValue("thermostatOperatingState")
 	def mode = device.currentValue("thermostatMode")
 
+	log.debug "-- evaluate($temp, $heatingSetpoint, $coolingSetpoint) at mode $mode"
+
 	def heating = false
 	def cooling = false
 	def idle = false
+    
+	//everything below here is fucked but this should update the idle icon when you change the set point and mode    
+//If Heat or Auto
 	if (mode in ["heat","emergency heat","auto"]) {
-    	log.debug "setting temp"
+log.debug "-- Heat or Auto  mode"
 		if (heatingSetpoint - temp >= threshold) {
 			heating = true
 			sendEvent(name: "thermostatOperatingState", value: "heating")
@@ -244,7 +311,9 @@ def evaluate(temp, heatingSetpoint, coolingSetpoint) {
 		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
         sendHubCommand(get(heatingSetpoint))
 	}
+//If Cool or Auto
 	if (mode in ["cool","auto"]) {
+log.debug "-- Cool or Auto mode"
     	sendEvent(name: "thermostatSetpoint", value: coolingSetpoint)
 		if (temp - coolingSetpoint >= threshold) {
 			cooling = true
@@ -253,13 +322,17 @@ def evaluate(temp, heatingSetpoint, coolingSetpoint) {
 		else if (coolingSetpoint - temp >= threshold && !heating) {
 			idle = true
 		}
-        log.debug "setting temp"
+log.debug "setting temp"
 	}
-	else {
+//If Off
+	else { 
+log.debug "-- Not Heat or Auto and note Cool or Auto"
 		sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
         sendHubCommand(get(heatingSetpoint))
 	}
+//If Idle
 	if (idle && !heating && !cooling) {
+log.debug "-- Idle and not heating or cooling"
 		sendEvent(name: "thermostatOperatingState", value: "idle")
 	}
 }
@@ -367,9 +440,11 @@ def fanCirculate() {
 	sendEvent(name: "thermostatFanMode", value: "circulate")
 }
 def poll() {
-	//log.debug "Executing 'poll'"
+	log.debug "*************Executing 'poll'"
     //sendEvent(name: "switch", value: "off")
-	null
+    
+    evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetPoint"))
+	//null
 }
 
 def tempUp() {
