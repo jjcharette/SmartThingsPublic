@@ -75,26 +75,39 @@ metadata {
 			]
 			)
 		}
-		tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
+		/*tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
 			attributeState("level", label:'32%')
             //attributeState("level", label:'${currentValue}%')
+		}*/
+        tileAttribute("device.coolingSetpoint", key: "SECONDARY_CONTROL") {
+			attributeState("level", label:'${currentValue}°', icon:"st.Weather.weather2")
 		}
         tileAttribute("device.temperature", key: "VALUE_CONTROL") {
         	attributeState("VALUE_UP", action: "coolingSetpointUp")
         	attributeState("VALUE_DOWN", action: "coolingSetpointDown")
     	}
 		tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
-			attributeState("idle", backgroundColor:"#44b621")
+			//attributeState("idle", backgroundColor:"#44b621")
+            attributeState("idle", backgroundColor:"#b5b5b5")         
 			attributeState("heating", backgroundColor:"#ffa81e")
 			attributeState("cooling", backgroundColor:"#269bd2")
 		}
-		tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
+        /*tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
 			attributeState("off", label:'${name}')
 			attributeState("heat", label:'${name}')
 			attributeState("cool", label:'${name}')
 			attributeState("auto", label:'${name}')
-      //attributeState("timer", label:'${name}')
+            attributeState("idle", label:'${name}', backgroundColor:"#44b621")
+      		//attributeState("timer", label:'${name}')
+		}*/
+		tileAttribute("device.thermostatOperatingState", key: "THERMOSTAT_MODE") {
+			attributeState("idle", backgroundColor:"#44b621")
+			attributeState("heating", backgroundColor:"#ffa81e")
+			attributeState("cooling", backgroundColor:"#269bd2")
+            attributeState("off", label:'${name}')
+            attributeState("auto", label:'${name}')
 		}
+        
        // tileAttribute("device.fireplaceState", key: "FIREPLACE_MODE") {
 		//	attributeState("off", label:'${name}')
 		//	attributeState("on", label:'${name}', backgroundColor:"#ffa81e")
@@ -125,26 +138,32 @@ metadata {
 		state "default", label:'${currentValue}°', unit:"Cool", backgroundColor:"#1e9cbb"
 	}
     
-    valueTile("temperature1", "device.temperature1", width: 3, height: 1) {
-		state "default", label:'Hallway (${currentValue}°)', unit:"C"
+ /*  	standardTile("temperature1", "device.temperature1", decoration: "flat", width: 3, height: 2) {
+		state "default",  label: 'Hallway (${currentValue}°)', icon: "st.Weather.weather2", action:"setCelsius"
+		state "celsius", label: "°C", icon: "st.Weather.weather2", action:"setFahrenheit"
 	}
+*/   
+    valueTile("temperature1", "device.temperature1", decoration: "flat", width: 3, height: 1) {
+		state "default", label:'Hallway (${currentValue}°)', icon: "st.Weather.weather2", unit:"C"
+	}
+    
 	valueTile("temperature2", "device.temperature2", width: 3, height: 1) {
-		state "default", label:'Kitchen (${currentValue}°)', unit:"C"
+		state "default", label:'Kitchen (${currentValue}°)', icon: "st.Weather.weather2", unit:"C"
 	}
 	valueTile("temperature3", "device.temperature3", width: 3, height: 1) {
-		state "default", label:'Living Room (${currentValue}°)', unit:"C"
+		state "default", label:'Living Room (${currentValue}°)', icon: "st.Weather.weather2", unit:"C"
 	}
 	valueTile("temperature4", "device.temperature4", width: 3, height: 1) {
-		state "default", label:'Upstairs (${currentValue}°)', unit:"C"
+		state "default", label:'Upstairs (${currentValue}°)', icon: "st.Weather.weather2", unit:"C"
 	}
-    valueTile("tempmin", "device.tempmin", width: 2, height: 1) {
-		state "default", label:'MIN ${currentValue}°', unit:"C"
+    valueTile("tempmin", "device.tempmin", width: 1, height: 1) {
+		state "default", label:'MIN       ${currentValue}°', icon: "st.Weather.weather2", unit:"C"
 	}
-	valueTile("tempmax", "device.tempmax", width: 2, height: 1) {
-		state "default", label:'MAX ${currentValue}°', unit:"C"
+	valueTile("tempmax", "device.tempmax", width: 1, height: 1) {
+		state "default", label:'MAX       ${currentValue}°', icon: "st.Weather.weather2", unit:"C"
 	}
-	valueTile("tempavg", "device.tempavg", width: 2, height: 1) {
-		state "default", label:'AVG ${currentValue}°', unit:"C"
+	valueTile("tempavg", "device.tempavg", width: 1, height: 1) {
+		state "default", label:'AVG       ${currentValue}°', icon: "st.Weather.weather2", unit:"C"
 	}
     
 	standardTile("heatingSetpointDown", "device.heatingSetpoint", decoration: "flat", width: 1, height: 1) {
@@ -164,8 +183,12 @@ metadata {
     //state("timer", action:"thermostat.auto", icon: "st.Office.office6")
 
 	}
+    
+    standardTile("blank", " ", inactiveLabel: true, decoration: "flat", width: 1, height: 1) {
+		state "defult"
+	}
 
-	standardTile("thermostatFanMode", "device.thermostatFanMode", inactiveLabel: true, decoration: "flat", width: 2, height: 2) {
+	standardTile("thermostatFanMode", "device.thermostatFanMode", inactiveLabel: true, decoration: "flat", width: 2, height: 1) {
 		state "auto", action:"thermostat.fanOn", icon: "st.thermostat.fan-auto"
 		state "on", action:"thermostat.fanCirculate", icon: "st.thermostat.fan-on"
 		state "circulate", action:"thermostat.fanAuto", icon: "st.thermostat.fan-circulate"
@@ -207,31 +230,32 @@ metadata {
 	main("tempreadout")
   //main(["temperature", "thermostatOperatingState"])
 
+
+//"coolingSetpoint",
+//"coolingSetpointDown",
+//"coolingSetpointUp",
+//"temperatureUnit",
+//"presence",
+
 	details([
             "temperature",
             
-            "fireplace",
-            "thermostatOperatingState",
-            "coolingSetpoint",
-
-			"thermostatFanMode",
+            "fireplace",            
+            "thermostatOperatingState",            
             "thermostatMode",
-
-            "coolingSetpointDown",
-            "coolingSetpointUp",
-            "temperatureUnit",
-            "refresh",
-           
-            "tempmin",
+                       
+			"tempmin",
             "tempmax",
-            "tempavg",
+			"tempavg",
+		    "refresh",
             
-        	"temperature1",
+			"thermostatFanMode",
+            
+			"temperature1",
         	"temperature2",
         	"temperature3",
         	"temperature4",
             
-        	"presence",
           ])
     }
 }
@@ -270,14 +294,14 @@ def fireplaceOn(){
 
 def setHeatingSetpoint(Double temp) {
 	log.debug "setHeatingSetpoint($temp)"
-    sendHubCommand(get(temp))
+    //sendHubCommand(get(temp))
 	sendEvent(name: "heatingSetpoint", value: temp)
 	evaluate(device.currentValue("temperature"), temp, device.currentValue("coolingSetpoint"))
 }
 
 def setCoolingSetpoint(Double temp) {
 	log.debug "setCoolingSetpoint($temp)"
-    sendHubCommand(get(temp))
+    //sendHubCommand(get(temp))
 	sendEvent(name: "coolingSetpoint", value: temp)
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), temp)
 }
@@ -329,7 +353,6 @@ def timer() {
 }
 
 def cool() {
-	sendHubCommand(get("cool"))
 	sendEvent(name: "thermostatMode", value: "cool")
 	evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
 }
@@ -415,7 +438,7 @@ def getSensorTemps(){
     def currentStateArray = sensorArr.currentState("temperature")
     
     def temps = [currentState.integerValue, currentState2.integerValue, currentState3.integerValue, currentState4.integerValue]
-    def average = temps.sum() / temps.size()
+    def average = (temps.sum() / temps.size()).toInteger()
     def min = temps.min()
     def max = temps.max()
     
@@ -443,6 +466,13 @@ def getSensorTemps(){
 }
 
 def evaluate(temp, heatingSetpoint, coolingSetpoint) {
+
+	///We dont want to use the x10 temp sensor so we set it to an out of bounds cooling and heating value. We don't use it so we pad it. We use the temp sensor data from zigbee devices
+	def x10heatvalue = 25
+    def x10coolvalue = 21
+    def x10offvalue = 18
+	///
+    
 	def threshold = 1.0
 	def current = device.currentValue("thermostatOperatingState")
 	def mode = device.currentValue("thermostatMode")
@@ -471,16 +501,21 @@ log.debug "-- Heat or Auto  mode"
 	}
 //If Cool or Auto
 	if (mode in ["cool","auto"]) {
-log.debug "-- Cool or Auto mode"
+		log.debug "-- Cool or Auto mode"
     	sendEvent(name: "thermostatSetpoint", value: coolingSetpoint)
 		if (temp - coolingSetpoint >= threshold) {
+			log.debug "-- It's Time to cool"	
 			cooling = true
+            sendHubCommand(get("cool"))
+            sendHubCommand(get(x10coolvalue))
 			sendEvent(name: "thermostatOperatingState", value: "cooling")
 		}
 		else if (coolingSetpoint - temp >= threshold && !heating) {
+        	log.debug "-- It's Time to idle"
 			idle = true
+			log.debug cooling
+            log.debug idle
 		}
-log.debug "setting temp"
 	}
 //If Off
 	else { 
@@ -490,7 +525,7 @@ log.debug "-- Not Heat or Auto and note Cool or Auto"
 	}
 //If Idle
 	if (idle && !heating && !cooling) {
-log.debug "-- Idle and not heating or cooling"
+		log.debug "-- Idle and not heating or cooling"
 		sendEvent(name: "thermostatOperatingState", value: "idle")
 	}
 }
