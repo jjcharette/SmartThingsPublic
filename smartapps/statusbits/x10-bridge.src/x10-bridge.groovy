@@ -470,7 +470,8 @@ def x10_on(nid) {
         return
     }
 
-    socketSend("${settings.mochadProtocol} ${s[1]} on\r\n", state.networkId)
+    socketSend("${settings.mochadProtocol} ${s[1]} on", state.networkId)
+    log.debug "socketSend Done ${settings.mochadProtocol} ${s[1]} on"
 }
 
 // Excecute X10 'off' command on behalf of child device
@@ -483,7 +484,7 @@ def x10_off(nid) {
         return
     }
 
-    socketSend("${settings.mochadProtocol} ${s[1]} off\r\n", state.networkId)
+    socketSend("${settings.mochadProtocol} ${s[1]} off", state.networkId)
 }
 
 // Excecute X10 'dim' command on behalf of child device
@@ -495,7 +496,7 @@ def x10_dim(nid, xdim) {
         log.debug "Invalid device network ID ${nid}"
         return
     }
-    socketSend("${settings.mochadProtocol} ${s[1]} dim\r\n", state.networkId)
+    socketSend("${settings.mochadProtocol} ${s[1]} dim", state.networkId)
    // socketSend("${settings.mochadProtocol} ${s[1]} xdim ${xdim}\r\n", state.networkId)
 }
 
@@ -508,7 +509,7 @@ def x10_bright(nid, xdim) {
         log.debug "Invalid device network ID ${nid}"
         return
     }
-    socketSend("${settings.mochadProtocol} ${s[1]} bright\r\n", state.networkId)
+    socketSend("${settings.mochadProtocol} ${s[1]} bright", state.networkId)
    // socketSend("${settings.mochadProtocol} ${s[1]} xdim ${xdim}\r\n", state.networkId)
 
 }
@@ -522,10 +523,10 @@ private def initialize() {
     updateDeviceList()
 
     // Subscribe to location events with filter disabled
-    subscribe(location, null, onLocation, [filterEvents:false])
+    subscribe(location, null, onLocation, [filterEvents:true])
 
     // for debugging
-    //subscribe(app, onAppTouch)
+    subscribe(app, onAppTouch)
 }
 
 private def addSwitch(addr, type) {
@@ -613,13 +614,30 @@ private def getDeviceListAsText(type) {
 }
 
 private def socketSend(message, networkId) {
-    TRACE("socketSend(${message}, ${networkId})")
+    TRACE("***** socketSend(${message}, ${networkId})")
 
-    def hubAction = new physicalgraph.device.HubAction(message,
-            physicalgraph.device.Protocol.LAN, networkId)
+ //   def hubAction = new physicalgraph.device.HubAction("${message}\r\n",
+ //           physicalgraph.device.Protocol.LAN, networkId, [callback: deviceDescriptionHandler])
 
-    TRACE("hubAction:\n${hubAction.getProperties()}")
+    def hubAction = new physicalgraph.device.HubAction(
+        method: "GET",
+        path: "/services/x10api.php",
+        headers: [
+            HOST: "10.0.0.10:80"
+        ],
+        query: [q: "${message}"]
+    )
+
+
+    TRACE("@@@@@@ hubAction:\n${hubAction.getProperties()}")
     sendHubCommand(hubAction)
+    //void sendHubCommand(List<HubAction> actions, delayInBetween = 1000)
+    TRACE("!!!!!! send hub done")
+}
+
+void deviceDescriptionHandler(physicalgraph.device.HubResponse hubResponse) {
+	TRACE("!!!!!! CALLBACK")
+	//test
 }
 
 // Returns device Network ID in 'AAAAAAAA:PPPP' format
@@ -651,7 +669,7 @@ private def textCopyright() {
 }
 
 private def TRACE(message) {
-    //log.debug message
+    log.debug message
 }
 
 private def STATE() {
